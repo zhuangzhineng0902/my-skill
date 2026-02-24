@@ -1,119 +1,162 @@
 import os
-
+import math
+import json
+import csv
 
 def create_file(path, content):
-    # 获取目录路径
     directory = os.path.dirname(path)
-    # 只有当目录名不为空时才创建文件夹
-    if directory:
+    if directory and not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
-
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
-    print(f"✅ 已创建: {path}")
+    print(f"✅ Created: {path}")
 
-
-# --- 1. 定义企业 UI 规范数据 (CSV) ---
-colors_csv = """Category,Name,Hex,Usage,Contrast_Rule
-Primary,Brand-Main,#0052D9,主要按钮、激活状态,White Text
-Success,Standard-Green,#2BA471,成功提示、完成进度,White Text
-Warning,Alert-Orange,#E37318,警告信息、待办提醒,Dark Text
-Error,Critical-Red,#D54941,错误提示、删除操作,White Text
-Background,Page-Bg,#F2F3F5,整个页面的底色,N/A
-Border,Component-Border,#DCDCDC,输入框、分割线颜色,N/A
-"""
-
-components_csv = """Component,Internal_Tag,Library_Source,Props_Guideline,Best_Practice
-Button,n-button,Nexus-UI,"theme='primary' | 'strong'","提交类操作必须使用 'strong'"
-Table,n-data-table,Nexus-UI,"size='large', :bordered='false'","数据超10条必须开启 virtual-scroll"
-Modal,n-modal,Nexus-UI,"width='600px', :mask-closable='false'","弹窗底部按钮必须右对齐"
-Form,n-form,Nexus-UI,"label-placement='left'","所有必填项必须带有星号标记"
-"""
-
-# --- 2. 定义 AI 检索逻辑脚本 (Python) ---
-search_script = """import csv
-import sys
+# --- 1. 核心 BM25 检索引擎 (Python 实现) ---
+bm25_engine_code = """
+import math
+import re
+import csv
 import os
 
-# 获取当前脚本所在目录的绝对路径，确保能找到 data 文件夹
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "..", "data")
+class BM25:
+    def __init__(self, corpus, k1=1.5, b=0.75):
+        self.corpus = corpus
+        self.k1 = k1
+        self.b = b
+        self.doc_len = [len(doc) for doc in corpus]
+        self.avgdl = sum(self.doc_len) / len(corpus)
+        self.n = len(corpus)
+        self.tf = []
+        self.df = {}
+        self.idf = {}
+        self._initialize()
 
-def search_specs(keyword):
+    def _initialize(self):
+        for doc in self.corpus:
+            tmp_tf = {}
+            for word in doc:
+                tmp_tf[word] = tmp_tf.get(word, 0) + 1
+            self.tf.append(tmp_tf)
+            for word in tmp_tf.keys():
+                self.df[word] = self.df.get(word, 0) + 1
+        for word, freq in self.df.items():
+            self.idf[word] = math.log((self.n - freq + 0.5) / (freq + 0.5) + 1)
+
+    def get_score(self, query, index):
+        score = 0
+        doc_tf = self.tf[index]
+        for word in query:
+            if word not in doc_tf: continue
+            score += (self.idf[word] * doc_tf[word] * (self.k1 + 1) / 
+                      (doc_tf[word] + self.k1 * (1 - self.b + self.b * self.doc_len[index] / self.avgdl)))
+        return score
+
+def tokenize(text):
+    return re.findall(r'\\w+', text.lower())
+
+def load_data(data_dir):
+    documents = []
+    metadata = []
+    for filename in os.listdir(data_dir):
+        if filename.endswith('.csv'):
+            with open(os.path.join(data_dir, filename), 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    content = " ".join(row.values())
+                    documents.append(tokenize(content))
+                    metadata.append({"source": filename, "data": row})
+    return documents, metadata
+
+def search(query_str):
+    data_dir = os.path.join(os.path.dirname(__file__), "../data")
+    docs, meta = load_data(data_dir)
+    bm25 = BM25(docs)
+    query = tokenize(query_str)
+    scores = [(bm25.get_score(query, i), i) for i in range(len(docs))]
+    scores.sort(key=lambda x: x[0], reverse=True)
+    
     results = []
-    try:
-        # 检索颜色
-        with open(os.path.join(DATA_DIR, "brand-colors.csv"), 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if keyword.lower() in str(row).lower():
-                    results.append(f"[Color] {row['Name']}: {row['Hex']} ({row['Usage']})")
-
-        # 检索组件
-        with open(os.path.join(DATA_DIR, "components.csv"), 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if keyword.lower() in str(row).lower():
-                    results.append(f"[Component] {row['Internal_Tag']}: {row['Props_Guideline']}")
-    except Exception as e:
-        return f"Error reading specs: {str(e)}"
-
-    return "\\n".join(results) if results else "No specific enterprise rule found."
+    for score, index in scores[:5]: # 返回前5个最相关的规范
+        if score > 0:
+            item = meta[index]
+            results.append(f"[Score: {score:.2f}] Source: {item['source']}\\nContent: {item['data']}\\n")
+    return "\\n".join(results) if results else "No matching guidelines found."
 
 if __name__ == "__main__":
+    import sys
     query = sys.argv[1] if len(sys.argv) > 1 else ""
-    print(search_specs(query))
+    print(search(query))
 """
 
-# --- 3. 定义 Skill 核心指令 (Markdown) ---
-skill_main = """# Enterprise UI/UX Engineering Skill
+# --- 2. 更加完整的规范数据 ---
 
-## Role
-你现在是【企业内部前端专家】，负责确保所有生成的 Web 页面严格符合公司《Nexus-UI 视觉交互规范》。
-
-## Workflow
-1. **分析需求**：识别用户描述的功能模块（如：列表页、表单页、看板）。
-2. **规范查询**：在生成代码前，先查阅 .shared/enterprise-ui-skill/data/ 下的文件或运行检索脚本。
-3. **代码生成**：
-   - 必须使用 `Nexus-UI` 组件库标签。
-   - 严禁硬编码颜色值，必须使用规范中的 Hex 或 CSS 变量。
-   - 遵循 8px 栅格系统（padding/margin 必须是 8 的倍数）。
-
-## UI Checklist (必须遵守)
-- 页面左右内边距统一为 24px。
-- 卡片（Card）的圆角统一为 4px。
-- 按钮组中，“确定”在右，“取消”在左。
+# UX 交互红线
+ux_guidelines = """Scenario,Rule,Priority,Detail
+Validation,表单校验必须在失焦(Blur)时触发,High,减少用户输入时的干扰
+Navigation,面包屑导航必须包含当前页面的父级路径,Medium,确保用户知道自己在哪里
+Feedback,超过2秒的操作必须显示进度条而非静止Loading,Critical,缓解用户焦虑
+Buttons,关键删除操作必须使用红色主题并带有二次确认,High,防止误删
 """
 
-# --- 4. 配置文件 ---
-cursor_rules = """{
-  "name": "Enterprise-UI-UX-Pro-Max",
-  "rules": [
-    "Before generating UI code, always check .shared/enterprise-ui-skill/data/ for brand guidelines.",
-    "Use standard company colors and components as defined in the skill files."
-  ]
-}
+# 字体与排版
+typography = """Token,FontFamily,Size,Weight,Usage
+--font-h1,PingFang SC / Inter,32px,600,一级标题
+--font-body,PingFang SC / Inter,14px,400,正文内容
+--font-code,JetBrains Mono,12px,400,代码块/技术指标
 """
 
+# 设计系统核心组件映射
+components = """Component,Internal_Tag,Library,Status,Usage_Notes
+Table,n-data-table,Nexus-UI,Ready,必须配置 row-key 和 virtual-scroll
+Button,n-button,Nexus-UI,Ready,主按钮全局只能出现一个
+Modal,n-modal,Nexus-UI,Ready,宽度建议固定为 520px/840px/1200px
+"""
+
+# 品牌颜色
+brand = """Category,Token,Value,Usage
+Brand,Primary,#0052D9,主要操作/链接
+Status,Success,#2BA471,成功/在线
+Status,Error,#D54941,报错/离线
+Neutral,Border,#DCDCDC,边框颜色
+"""
+
+# --- 3. 生成 Skill 说明书 ---
+skill_main = """# Enterprise UI/UX Engineering (BM25 Enabled)
+
+你是一个集成了 **BM25 语义检索** 的企业级 UI/UX 专家 AI。
+
+## 检索机制
+你拥有一个基于 BM25 算法的检索工具 `search_engine.py`。
+当用户要求设计页面或编写 UI 代码时，你**必须**：
+1. 先提取用户需求中的关键词（如：表格、报错、主色调）。
+2. 调用 `python3 .shared/enterprise-ui-skill/scripts/search_engine.py "<关键词>"`。
+3. 根据返回的相关性评分（Score）最高的规范来生成代码。
+
+## 核心设计哲学
+- **Token First**: 严禁直接写 `color: #0052D9`，必须检索对应的 Token 如 `var(--brand-primary)`。
+- **UX Consistency**: 严格遵守 `ux-guidelines.csv` 中的反馈与校验机制。
+- **Library Compliance**: 仅使用内部 `Nexus-UI` 组件。
+"""
 
 def main():
-    # 路径定义
-    base_dir = ".shared/enterprise-ui-skill"
+    root = ".shared/enterprise-ui-skill"
+    # 创建目录和文件
+    create_file(f"{root}/data/ux_guidelines.csv", ux_guidelines)
+    create_file(f"{root}/data/typography.csv", typography)
+    create_file(f"{root}/data/components.csv", components)
+    create_file(f"{root}/data/brand.csv", brand)
+    
+    create_file(f"{root}/scripts/search_engine.py", bm25_engine_code)
+    create_file(f"{root}/skill-main.md", skill_main)
+    
+    # Cursor 规则配置
+    cursor_rules = {
+        "name": "Enterprise UI/UX Specialist",
+        "instruction": f"Always query the BM25 search engine in {root}/scripts/search_engine.py before providing UI/UX solutions to ensure alignment with corporate standards."
+    }
+    create_file(".cursorrules", json.dumps(cursor_rules, indent=2))
 
-    # 执行文件创建
-    create_file(f"{base_dir}/data/brand-colors.csv", colors_csv)
-    create_file(f"{base_dir}/data/components.csv", components_csv)
-    create_file(f"{base_dir}/scripts/search_enterprise.py", search_script)
-    create_file(f"{base_dir}/skill-main.md", skill_main)
-    create_file(".cursorrules", cursor_rules)
-
-    print("\n🚀 [成功] 企业 UI/UX Skill 工程代码已生成！")
-    print("--------------------------------------------------")
-    print(f"1. 规范数据存放于: {base_dir}/data/")
-    print(f"2. 检索脚本存放于: {base_dir}/scripts/")
-    print(f"3. AI 指令说明书: {base_dir}/skill-main.md")
-    print("--------------------------------------------------")
-
+    print("\n🚀 [高级版] 企业 UI/UX Skill 已生成，集成 BM25 检索算法！")
 
 if __name__ == "__main__":
     main()
