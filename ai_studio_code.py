@@ -1,165 +1,166 @@
 import os
-import re
+import math
 import json
-import time
-import base64
-import requests
-from bs4 import BeautifulSoup, NavigableString, Comment
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from openai import OpenAI
+import csv
 
-# ================= 配置区 =================
-CONFIG_FILE = "menu.json"           
-BASE_URL = "https://docs.example.com" 
-LOGIN_URL = f"{BASE_URL}/login"
-CONTENT_SELECTOR = "main.content-body" 
-OUTPUT_DIR = "scraped_docs"
 
-# OpenAI 及其代理配置
-API_KEY = "your-api-key"
-CUSTOM_BASE_URL = "https://your-proxy-domain.com/v1"
-MODEL_NAME = "gpt-4o-mini" 
+def create_file(path, content):
+    directory = os.path.dirname(path)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"✅ Created: {path}")
 
-# 图片过滤配置
-SKIP_IMAGE_PREFIX = "xxx" # 以此开头的图片 URL 将被视为头像并跳过
 
-client = OpenAI(api_key=API_KEY, base_url=CUSTOM_BASE_URL)
+# --- 1. 核心 BM25 检索引擎 (Python 实现) ---
+bm25_engine_code = """
+import math
+import re
+import csv
+import os
 
-class DocScraper:
-    def __init__(self):
-        if not os.path.exists(OUTPUT_DIR):
-            os.makedirs(OUTPUT_DIR)
-        
-        options = Options()
-        self.driver = webdriver.Chrome(options=options)
-        self.session = requests.Session()
+class BM25:
+    def __init__(self, corpus, k1=1.5, b=0.75):
+        self.corpus = corpus
+        self.k1 = k1
+        self.b = b
+        self.doc_len = [len(doc) for doc in corpus]
+        self.avgdl = sum(self.doc_len) / len(corpus)
+        self.n = len(corpus)
+        self.tf = []
+        self.df = {}
+        self.idf = {}
+        self._initialize()
 
-    def sync_cookies(self):
-        """同步 Selenium 登录态到 Session"""
-        for cookie in self.driver.get_cookies():
-            self.session.cookies.set(cookie['name'], cookie['value'])
+    def _initialize(self):
+        for doc in self.corpus:
+            tmp_tf = {}
+            for word in doc:
+                tmp_tf[word] = tmp_tf.get(word, 0) + 1
+            self.tf.append(tmp_tf)
+            for word in tmp_tf.keys():
+                self.df[word] = self.df.get(word, 0) + 1
+        for word, freq in self.df.items():
+            self.idf[word] = math.log((self.n - freq + 0.5) / (freq + 0.5) + 1)
 
-    def get_image_base64(self, img_url):
-        """下载图片并转 Base64"""
-        try:
-            resp = self.session.get(img_url, timeout=10)
-            if resp.status_code == 200:
-                ext = img_url.split('.')[-1].split('?')[0].lower()
-                mime = f"image/{ext}" if ext in ['png','jpg','jpeg','gif','webp'] else "image/jpeg"
-                b64 = base64.b64encode(resp.content).decode('utf-8')
-                return f"data:{mime};base64,{b64}"
-        except Exception as e:
-            print(f"  [!] 图片下载失败: {img_url} -> {e}")
-        return None
+    def get_score(self, query, index):
+        score = 0
+        doc_tf = self.tf[index]
+        for word in query:
+            if word not in doc_tf: continue
+            score += (self.idf[word] * doc_tf[word] * (self.k1 + 1) / 
+                      (doc_tf[word] + self.k1 * (1 - self.b + self.b * self.doc_len[index] / self.avgdl)))
+        return score
 
-    def analyze_img_with_ai(self, img_url):
-        """解析图片，包含空校验和前缀过滤"""
-        # 1. 空校验
-        if not img_url or not str(img_url).strip():
-            return None
+def tokenize(text):
+    return re.findall(r'\\w+', text.lower())
 
-        # 2. 头像/特定前缀过滤逻辑
-        if img_url.startswith(SKIP_IMAGE_PREFIX):
-            print(f"  [-] 跳过头像/装饰图: {img_url[:30]}...")
-            return None
+def load_data(data_dir):
+    documents = []
+    metadata = []
+    for filename in os.listdir(data_dir):
+        if filename.endswith('.csv'):
+            with open(os.path.join(data_dir, filename), 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    content = " ".join(row.values())
+                    documents.append(tokenize(content))
+                    metadata.append({"source": filename, "data": row})
+    return documents, metadata
 
-        # 3. 获取文件流
-        b64_data = self.get_image_base64(img_url)
-        if not b64_data: return "[无法读取图片内容]"
-        
-        try:
-            res = client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": [
-                    {"type": "text", "text": "描述图片内容并提取文字。"},
-                    {"type": "image_url", "image_url": {"url": b64_data}}
-                ]}]
-            )
-            return res.choices[0].message.content.strip()
-        except Exception as e:
-            return f"[AI解析报错: {e}]"
+def search(query_str):
+    data_dir = os.path.join(os.path.dirname(__file__), "../data")
+    docs, meta = load_data(data_dir)
+    bm25 = BM25(docs)
+    query = tokenize(query_str)
+    scores = [(bm25.get_score(query, i), i) for i in range(len(docs))]
+    scores.sort(key=lambda x: x[0], reverse=True)
 
-    def html_to_md(self, element):
-        """递归 HTML 到 Markdown 映射"""
-        if isinstance(element, Comment): return ""
-        if isinstance(element, NavigableString): return element.string or ""
-
-        tag = element.name
-        inner_md = "".join(self.html_to_md(c) for c in element.children)
-
-        match tag:
-            case 'h1' | 'h2' | 'h3': return f"\n\n{'#' * int(tag[1])} {inner_md}\n"
-            case 'p': return f"\n\n{inner_md}\n"
-            case 'strong' | 'b': return f" **{inner_md}** "
-            case 'em' | 'i': return f" *{inner_md}* "
-            case 'a': return f" [{inner_md}]({element.get('href', '#')}) "
-            case 'ul' | 'ol': return f"\n{inner_md}\n"
-            case 'li':
-                prefix = "1. " if element.parent.name == 'ol' else "* "
-                return f"{prefix}{inner_md}\n"
-            case 'pre': return f"\n```\n{element.get_text().strip()}\n```\n"
-            case 'img':
-                src = element.get('src', '').strip()
-                # 调用 AI 解析（内部已包含 SKIP_IMAGE_PREFIX 过滤）
-                desc = self.analyze_img_with_ai(src)
-                
-                # 如果返回 None 或者是被跳过的图片，则不生成任何内容
-                if desc is None:
-                    return ""
-                return f"\n\n![img]({src})\n> **AI 图片解析**: {desc}\n\n"
-            case 'table': return self._parse_table(element)
-            case 'hr': return "\n---\n"
-            case _: return inner_md
-
-    def _parse_table(self, table):
-        rows = []
-        all_tr = table.find_all('tr')
-        if not all_tr: return ""
-        for tr in all_tr:
-            cells = [td.get_text(strip=True) for td in tr.find_all(['td', 'th'])]
-            rows.append(f"| {' | '.join(cells)} |")
-        if len(rows) > 0:
-            col_count = len(all_tr[0].find_all(['td', 'th']))
-            sep = f"| {' | '.join(['---'] * col_count)} |"
-            rows.insert(1, sep)
-        return "\n" + "\n".join(rows) + "\n"
-
-    def traverse_json(self, nodes, current_path=[]):
-        """递归遍历 JSON 菜单树"""
-        for node in nodes:
-            label = re.sub(r'[\\/:*?"<>|]', '-', node.get('label', 'unnamed'))
-            new_path = current_path + [label]
-            children = node.get('children', [])
-            if children:
-                self.traverse_json(children, new_path)
-            else:
-                target_url = f"{BASE_URL}/{node['belongToSysId']}/{node['id']}"
-                self.scrape_page(target_url, new_path)
-
-    def scrape_page(self, url, path_list):
-        file_name = "-".join(path_list) + ".md"
-        print(f">>> 正在同步: {file_name}")
-        try:
-            self.driver.get(url)
-            time.sleep(2)
-            soup = BeautifulSoup(self.driver.page_source, 'lxml')
-            content = soup.select_one(CONTENT_SELECTOR)
-            if content:
-                md_body = self.html_to_md(content)
-                with open(os.path.join(OUTPUT_DIR, file_name), "w", encoding="utf-8") as f:
-                    f.write(f"# {' / '.join(path_list)}\n\n{md_body}")
-        except Exception as e:
-            print(f"  [!] 抓取失败: {url} -> {e}")
-
-    def run(self):
-        self.driver.get(LOGIN_URL)
-        input(">>> 请登录后按回车...")
-        self.sync_cookies()
-        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            self.traverse_json(json.load(f))
-        self.driver.quit()
-        print(">>> 任务圆满完成！")
+    results = []
+    for score, index in scores[:5]: # 返回前5个最相关的规范
+        if score > 0:
+            item = meta[index]
+            results.append(f"[Score: {score:.2f}] Source: {item['source']}\\nContent: {item['data']}\\n")
+    return "\\n".join(results) if results else "No matching guidelines found."
 
 if __name__ == "__main__":
-    DocScraper().run()
+    import sys
+    query = sys.argv[1] if len(sys.argv) > 1 else ""
+    print(search(query))
+"""
+
+# --- 2. 更加完整的规范数据 ---
+
+# UX 交互红线
+ux_guidelines = """Scenario,Rule,Priority,Detail
+Validation,表单校验必须在失焦(Blur)时触发,High,减少用户输入时的干扰
+Navigation,面包屑导航必须包含当前页面的父级路径,Medium,确保用户知道自己在哪里
+Feedback,超过2秒的操作必须显示进度条而非静止Loading,Critical,缓解用户焦虑
+Buttons,关键删除操作必须使用红色主题并带有二次确认,High,防止误删
+"""
+
+# 字体与排版
+typography = """Token,FontFamily,Size,Weight,Usage
+--font-h1,PingFang SC / Inter,32px,600,一级标题
+--font-body,PingFang SC / Inter,14px,400,正文内容
+--font-code,JetBrains Mono,12px,400,代码块/技术指标
+"""
+
+# 设计系统核心组件映射
+components = """Component,Internal_Tag,Library,Status,Usage_Notes
+Table,n-data-table,Nexus-UI,Ready,必须配置 row-key 和 virtual-scroll
+Button,n-button,Nexus-UI,Ready,主按钮全局只能出现一个
+Modal,n-modal,Nexus-UI,Ready,宽度建议固定为 520px/840px/1200px
+"""
+
+# 品牌颜色
+brand = """Category,Token,Value,Usage
+Brand,Primary,#0052D9,主要操作/链接
+Status,Success,#2BA471,成功/在线
+Status,Error,#D54941,报错/离线
+Neutral,Border,#DCDCDC,边框颜色
+"""
+
+# --- 3. 生成 Skill 说明书 ---
+skill_main = """# Enterprise UI/UX Engineering (BM25 Enabled)
+
+你是一个集成了 **BM25 语义检索** 的企业级 UI/UX 专家 AI。
+
+## 检索机制
+你拥有一个基于 BM25 算法的检索工具 `search_engine.py`。
+当用户要求设计页面或编写 UI 代码时，你**必须**：
+1. 先提取用户需求中的关键词（如：表格、报错、主色调）。
+2. 调用 `python3 .shared/enterprise-ui-skill/scripts/search_engine.py "<关键词>"`。
+3. 根据返回的相关性评分（Score）最高的规范来生成代码。
+
+## 核心设计哲学
+- **Token First**: 严禁直接写 `color: #0052D9`，必须检索对应的 Token 如 `var(--brand-primary)`。
+- **UX Consistency**: 严格遵守 `ux-guidelines.csv` 中的反馈与校验机制。
+- **Library Compliance**: 仅使用内部 `Nexus-UI` 组件。
+"""
+
+
+def main():
+    root = ".shared/enterprise-ui-skill"
+    # 创建目录和文件
+    create_file(f"{root}/data/ux_guidelines.csv", ux_guidelines)
+    create_file(f"{root}/data/typography.csv", typography)
+    create_file(f"{root}/data/components.csv", components)
+    create_file(f"{root}/data/brand.csv", brand)
+
+    create_file(f"{root}/scripts/search_engine.py", bm25_engine_code)
+    create_file(f"{root}/skill-main.md", skill_main)
+
+    # Cursor 规则配置
+    cursor_rules = {
+        "name": "Enterprise UI/UX Specialist",
+        "instruction": f"Always query the BM25 search engine in {root}/scripts/search_engine.py before providing UI/UX solutions to ensure alignment with corporate standards."
+    }
+    create_file(".cursorrules", json.dumps(cursor_rules, indent=2))
+
+    print("\n🚀 [高级版] 企业 UI/UX Skill 已生成，集成 BM25 检索算法！")
+
+
+if __name__ == "__main__":
+    main()
