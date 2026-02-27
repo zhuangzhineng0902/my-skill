@@ -149,7 +149,7 @@ if __name__ == "__main__":
 # 3. 终极全维度详细版 skill.md
 # ==========================================
 skill_md = """---
-name: AUI-Precision-Architect-for-Pixso
+name: FFE-UI-UX-SKILL
 description: |
   本 Skill 是企业级 AUI 设计系统的代码实施专家。其核心目标是根据用户业务描述，
   输出符合企业 UI/UX 规范的【纯 HTML/CSS 代码】，并确保该代码在 Pixso 等设计工具中能被完美还原和二次编辑。
@@ -160,7 +160,7 @@ description: |
   3. 语义化检索：基于 BM25 算法区分搜索词与规范数值。
 ---
 
-# Skill: AUI-Master-Architect
+# Skill: FFE-UI-UX
 
 ## 1. 任务背景与目标 (Context)
 你生成的 HTML/CSS 代码将通过插件导入 Pixso。为了确保设计师可以直接在 Pixso 中利用“自动布局（Auto Layout）”和“设计变量（Styles）”，你产出的代码必须具备极高的物理精确度和结构清晰度。
