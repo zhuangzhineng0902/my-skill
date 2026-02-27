@@ -1,1163 +1,738 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>销售订单详情</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #3B82F6;
-            --primary-hover: #2563EB;
-            --secondary: #60A5FA;
-            --cta: #F97316;
-            --cta-hover: #EA580C;
-            --background: #F8FAFC;
-            --surface: #FFFFFF;
-            --surface-hover: #F1F5F9;
-            --text-primary: #1E293B;
-            --text-secondary: #64748B;
-            --text-muted: #94A3B8;
-            --border: #E2E8F0;
-            --border-hover: #CBD5E1;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --info: #3B82F6;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --transition: all 0.2s ease-in-out;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        .text-primary {
-            color: var(--primary);
-        }
-
-        .text-secondary {
-            color: var(--text-secondary);
-        }
-
-        .text-muted {
-            color: var(--text-muted);
-        }
-
-        .text-success {
-            color: var(--success);
-        }
-
-        .text-warning {
-            color: var(--warning);
-        }
-
-        .text-danger {
-            color: var(--danger);
-        }
-
-        .bg-surface {
-            background-color: var(--surface);
-        }
-
-        .border {
-            border: 1px solid var(--border);
-        }
-
-        .rounded {
-            border-radius: 8px;
-        }
-
-        .rounded-lg {
-            border-radius: 12px;
-        }
-
-        .shadow {
-            box-shadow: var(--shadow-md);
-        }
-
-        .shadow-lg {
-            box-shadow: var(--shadow-lg);
-        }
-
-        .flex {
-            display: flex;
-        }
-
-        .flex-col {
-            flex-direction: column;
-        }
-
-        .items-center {
-            align-items: center;
-        }
-
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .justify-center {
-            justify-content: center;
-        }
-
-        .gap-2 {
-            gap: 8px;
-        }
-
-        .gap-3 {
-            gap: 12px;
-        }
-
-        .gap-4 {
-            gap: 16px;
-        }
-
-        .gap-6 {
-            gap: 24px;
-        }
-
-        .p-4 {
-            padding: 16px;
-        }
-
-        .p-6 {
-            padding: 24px;
-        }
-
-        .p-8 {
-            padding: 32px;
-        }
-
-        .px-4 {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
-
-        .py-2 {
-            padding-top: 8px;
-            padding-bottom: 8px;
-        }
-
-        .py-3 {
-            padding-top: 12px;
-            padding-bottom: 12px;
-        }
-
-        .py-4 {
-            padding-top: 16px;
-            padding-bottom: 16px;
-        }
-
-        .mb-2 {
-            margin-bottom: 8px;
-        }
-
-        .mb-4 {
-            margin-bottom: 16px;
-        }
-
-        .mb-6 {
-            margin-bottom: 24px;
-        }
-
-        .mb-8 {
-            margin-bottom: 32px;
-        }
-
-        .mt-4 {
-            margin-top: 16px;
-        }
-
-        .mt-6 {
-            margin-top: 24px;
-        }
-
-        .grid {
-            display: grid;
-        }
-
-        .grid-cols-1 {
-            grid-template-columns: repeat(1, 1fr);
-        }
-
-        .grid-cols-2 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .grid-cols-3 {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .grid-cols-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
-
-        .col-span-2 {
-            grid-column: span 2;
-        }
-
-        .col-span-3 {
-            grid-column: span 3;
-        }
-
-        .text-sm {
-            font-size: 14px;
-        }
-
-        .text-base {
-            font-size: 16px;
-        }
-
-        .text-lg {
-            font-size: 18px;
-        }
-
-        .text-xl {
-            font-size: 20px;
-        }
-
-        .text-2xl {
-            font-size: 24px;
-        }
-
-        .text-3xl {
-            font-size: 30px;
-        }
-
-        .font-light {
-            font-weight: 300;
-        }
-
-        .font-normal {
-            font-weight: 400;
-        }
-
-        .font-medium {
-            font-weight: 500;
-        }
-
-        .font-semibold {
-            font-weight: 600;
-        }
-
-        .font-bold {
-            font-weight: 700;
-        }
-
-        .cursor-pointer {
-            cursor: pointer;
-        }
-
-        .transition {
-            transition: var(--transition);
-        }
-
-        .hover\:bg-surface-hover:hover {
-            background-color: var(--surface-hover);
-        }
-
-        .hover\:shadow-lg:hover {
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid transparent;
-            outline: none;
-            white-space: nowrap;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
-        }
-
-        .btn-secondary {
-            background-color: white;
-            color: var(--text-primary);
-            border-color: var(--border);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--surface-hover);
-            border-color: var(--border-hover);
-        }
-
-        .btn-cta {
-            background-color: var(--cta);
-            color: white;
-            border-color: var(--cta);
-        }
-
-        .btn-cta:hover {
-            background-color: var(--cta-hover);
-            border-color: var(--cta-hover);
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-
-        .badge-warning {
-            background-color: #FEF3C7;
-            color: #92400E;
-        }
-
-        .badge-danger {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-
-        .badge-info {
-            background-color: #DBEAFE;
-            color: #1E40AF;
-        }
-
-        .card {
-            background-color: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            transition: var(--transition);
-        }
-
-        .icon {
-            width: 20px;
-            height: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-lg {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-xl {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .form-label .required {
-            color: var(--danger);
-            margin-left: 4px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            color: var(--text-primary);
-            background-color: white;
-            transition: var(--transition);
-            outline: none;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .form-input:disabled {
-            background-color: var(--background);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            color: var(--text-primary);
-            background-color: white;
-            transition: var(--transition);
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 40px;
-        }
-
-        .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .form-select:disabled {
-            background-color: var(--background);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            color: var(--text-primary);
-            background-color: white;
-            transition: var(--transition);
-            outline: none;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th,
-        .table td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .table th {
-            background-color: var(--surface-hover);
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .table tr:hover td {
-            background-color: rgba(59, 130, 246, 0.02);
-        }
-
-        .table input,
-        .table select {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            color: var(--text-primary);
-            background-color: white;
-            transition: var(--transition);
-            outline: none;
-        }
-
-        .table input:focus,
-        .table select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        .table input:disabled,
-        .table select:disabled {
-            background-color: var(--background);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
-
-        .checkbox {
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: var(--transition);
-            appearance: none;
-            background-color: white;
-        }
-
-        .checkbox:checked {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-
-        .checkbox:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .accordion {
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background-color: var(--surface);
-            margin-bottom: 16px;
-            overflow: hidden;
-        }
-
-        .accordion-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            cursor: pointer;
-            transition: var(--transition);
-            background-color: var(--surface);
-            border-bottom: 1px solid transparent;
-        }
-
-        .accordion-header:hover {
-            background-color: var(--surface-hover);
-        }
-
-        .accordion-header.active {
-            background-color: var(--surface-hover);
-            border-bottom-color: var(--border);
-        }
-
-        .accordion-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .accordion-icon {
-            width: 20px;
-            height: 20px;
-            transition: var(--transition);
-            color: var(--text-secondary);
-        }
-
-        .accordion-header.active .accordion-icon {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .accordion-content.active {
-            max-height: 2000px;
-        }
-
-        .accordion-body {
-            padding: 24px;
-        }
-
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            background-color: var(--surface-hover);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .toolbar-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .toolbar-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .action-btn {
-            padding: 6px 12px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .action-btn:hover {
-            background-color: var(--surface-hover);
-            border-color: var(--border-hover);
-        }
-
-        .header-card {
-            background: linear-gradient(135deg, var(--surface) 0%, #F0F9FF 100%);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-
-        .header-content {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
-
-        .header-info {
-            display: flex;
-            gap: 24px;
-            align-items: flex-start;
-        }
-
-        .header-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .header-icon svg {
-            width: 32px;
-            height: 32px;
-            color: white;
-        }
-
-        .header-text h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .header-text p {
-            font-size: 16px;
-            color: var(--text-secondary);
-            font-family: 'Plus Jakarta Sans', monospace;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .page-content {
-            padding-bottom: 100px;
-        }
-
-        .page-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--surface);
-            border-top: 1px solid var(--border);
-            padding: 16px 24px;
-            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
-            z-index: 100;
-        }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        .main-content {
-            padding-top: 24px;
-        }
-
-        @media (max-width: 1024px) {
-            .grid-cols-4 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 24px;
-            }
-            
-            .header-info {
-                width: 100%;
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .grid-cols-2,
-            .grid-cols-3,
-            .grid-cols-4 {
-                grid-template-columns: 1fr;
-            }
-            
-            .col-span-2,
-            .col-span-3 {
-                grid-column: span 1;
-            }
-            
-            .container {
-                padding: 0 16px;
-            }
-            
-            .header-card {
-                padding: 24px;
-            }
-            
-            .header-text h1 {
-                font-size: 24px;
-            }
-            
-            .footer-content {
-                flex-wrap: wrap;
-            }
-            
-            .btn {
-                flex: 1;
-                min-width: 120px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header-info {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
-            .header-icon {
-                width: 48px;
-                height: 48px;
-            }
-            
-            .header-icon svg {
-                width: 24px;
-                height: 24px;
-            }
-            
-            .accordion-header {
-                padding: 12px 16px;
-            }
-            
-            .accordion-body {
-                padding: 16px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>销售订单详情</title>
+  <style>
+    :root {
+      /* AUI 品牌色 - 从 brand.csv 检索 */
+      --aui-color-primary: #0052D9;
+      --aui-color-success: #2BA471;
+      --aui-color-error: #D54941;
+      --aui-color-warning: #E37318;
+      --aui-text-900: #1C1C1C;
+      --aui-bg-page: #F2F3F5;
+      
+      /* AUI 间距 - 从 spacing.csv 检索 */
+      --space-s: 8px;
+      --space-m: 16px;
+      --space-l: 24px;
+      
+      /* AUI 字体 - 从 typography.csv 检索 */
+      --font-h1: 32px;
+      --font-body: 14px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background-color: var(--aui-bg-page);
+      color: var(--aui-text-900);
+      line-height: 1.5;
+      padding: var(--space-l);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ========== 顶部卡片 ==========
+       O_Tag: aui-card
+       O_CSS_Blueprint: border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12);
+    */
+    .aui-card-detail-header {
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: var(--space-l);
+      margin-bottom: var(--space-l);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .aui-card-header-content {
+      display: flex;
+      align-items: center;
+      gap: var(--space-m);
+    }
+
+    /* ========== 卡片图标 ==========
+       O_Asset_Key: aui-icon-search
+       O_Size: 16px
+    */
+    .aui-card-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--aui-color-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .aui-card-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #FFFFFF;
+    }
+
+    .aui-card-text {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    /* ========== 主标题 ==========
+       O_Level: Heading-L
+       O_Size: 32px
+       O_Weight: 600
+    */
+    .aui-card-title {
+      font-size: var(--font-h1);
+      font-weight: 600;
+      color: var(--aui-text-900);
+      line-height: 1.2;
+    }
+
+    .aui-card-subtitle {
+      font-size: var(--font-body);
+      color: var(--aui-text-900);
+      font-weight: 400;
+    }
+
+    /* ========== 状态标签 ==========
+       O_Tag: aui-tag-success
+       O_Hex: #2BA471
+    */
+    .aui-tag-success {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--aui-color-success);
+      color: #FFFFFF;
+    }
+
+    /* ========== 折叠面板容器 ==========
+       O_Tag: aui-collapse
+       O_CSS_Blueprint: border-radius:8px;
+    */
+    .aui-collapse-container {
+      background: #FFFFFF;
+      border-radius: 8px;
+      margin-bottom: var(--space-l);
+      overflow: hidden;
+    }
+
+    .aui-collapse-item {
+      border-bottom: 1px solid #DCDCDC;
+    }
+
+    .aui-collapse-item:last-child {
+      border-bottom: none;
+    }
+
+    /* ========== 折叠面板头部 ==========
+       O_Interaction: Hover时背景加深10%
+    */
+    .aui-collapse-header {
+      padding: var(--space-m) var(--space-l);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FAFAFA;
+      transition: background 0.2s;
+    }
+
+    .aui-collapse-header:hover {
+      background: #F0F0F0;
+    }
+
+    .aui-collapse-header.active {
+      background: #F5F5F5;
+    }
+
+    .aui-collapse-title {
+      font-size: var(--font-body);
+      font-weight: 600;
+      color: var(--aui-text-900);
+    }
+
+    .aui-collapse-icon {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s;
+    }
+
+    .aui-collapse-content {
+      padding: var(--space-l);
+      display: none;
+    }
+
+    .aui-collapse-content.active {
+      display: block;
+    }
+
+    /* ========== 表单布局 ==========
+       O_Pattern: Multi-Step-Form
+       O_Logic: 分步提交任务引导
+    */
+    .aui-form-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-m);
+    }
+
+    .aui-form-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      min-width: 200px;
+      flex: 1;
+    }
+
+    .aui-form-label {
+      font-size: var(--font-body);
+      font-weight: 500;
+      color: var(--aui-text-900);
+    }
+
+    .aui-form-label.required::after {
+      content: '*';
+      color: var(--aui-color-error);
+      margin-left: 4px;
+    }
+
+    /* ========== 输入框 ==========
+       O_Tag: aui-input
+       O_CSS_Blueprint: display:flex; height:32px; border:1px solid #DCDCDC; padding:0 12px;
+       O_Interaction: Focus时边框变蓝色
+    */
+    .aui-input,
+    .aui-select,
+    .aui-textarea {
+      width: 100%;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #DCDCDC;
+      border-radius: 4px;
+      font-size: var(--font-body);
+      color: var(--aui-text-900);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .aui-input:focus,
+    .aui-select:focus,
+    .aui-textarea:focus {
+      outline: none;
+      border-color: var(--aui-color-primary);
+      box-shadow: 0 0 0 2px rgba(0, 82, 217, 0.1);
+    }
+
+    .aui-textarea {
+      height: auto;
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* ========== 表格 ==========
+       O_Tag: aui-table
+       O_CSS_Blueprint: width:100%; border-radius:8px; border-collapse:collapse;
+       O_Interaction: 支持奇偶行变色
+    */
+    .aui-table-container {
+      overflow-x: auto;
+    }
+
+    .aui-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-body);
+    }
+
+    .aui-table th {
+      background: #FAFAFA;
+      padding: var(--space-s) var(--space-m);
+      font-weight: 600;
+      color: var(--aui-text-900);
+      text-align: left;
+      border-bottom: 1px solid #DCDCDC;
+    }
+
+    .aui-table td {
+      padding: var(--space-s) var(--space-m);
+      border-bottom: 1px solid #DCDCDC;
+      color: var(--aui-text-900);
+    }
+
+    .aui-table tr:hover td {
+      background: #FAFAFA;
+    }
+
+    .aui-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .aui-table-checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* ========== 操作按钮组 ==========
+       O_Interaction: Hover时背景加深10%
+    */
+    .aui-table-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-s);
+    }
+
+    .aui-table-action-btn {
+      padding: 4px 8px;
+      border: none;
+      background: transparent;
+      color: var(--aui-color-primary);
+      cursor: pointer;
+      font-size: var(--font-body);
+      transition: color 0.2s;
+    }
+
+    .aui-table-action-btn:hover {
+      color: #0052A8;
+    }
+
+    .aui-table-select {
+      width: 100%;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #DCDCDC;
+      border-radius: 4px;
+      font-size: var(--font-body);
+      background: #FFFFFF;
+      cursor: pointer;
+    }
+
+    .aui-table-select:focus {
+      outline: none;
+      border-color: var(--aui-color-primary);
+    }
+
+    .aui-table-date-picker {
+      width: 100%;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #DCDCDC;
+      border-radius: 4px;
+      font-size: var(--font-body);
+    }
+
+    .aui-table-text-input {
+      width: 100%;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #DCDCDC;
+      border-radius: 4px;
+      font-size: var(--font-body);
+    }
+
+    .aui-table-text-input:focus {
+      outline: none;
+      border-color: var(--aui-color-primary);
+    }
+
+    /* ========== 表格工具栏 ==========
+       O_Tag: aui-btn-primary
+       O_CSS_Blueprint: display:flex; padding:8px 16px; border-radius:4px; background:#0052D9; color:#FFFFFF;
+       O_Interaction: Hover时背景加深10%
+    */
+    .aui-table-toolbar {
+      margin-bottom: var(--space-m);
+    }
+
+    .aui-btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 4px;
+      background: var(--aui-color-primary);
+      color: #FFFFFF;
+      border: none;
+      font-size: var(--font-body);
+      font-weight: 500;
+      cursor: pointer;
+      gap: var(--space-xs);
+    }
+
+    .aui-btn-primary:hover {
+      background: #0052A8;
+    }
+
+    /* ========== 页面底部按钮组 ==========
+       O_Pattern: ButtonGroup
+       O_Layout_Engine: Flex
+    */
+    .aui-page-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-s);
+      margin-top: var(--space-l);
+    }
+
+    .aui-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 24px;
+      border-radius: 4px;
+      font-size: var(--font-body);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .aui-btn-primary-footer {
+      background: var(--aui-color-primary);
+      color: #FFFFFF;
+      border: none;
+    }
+
+    .aui-btn-primary-footer:hover {
+      background: #0052A8;
+    }
+
+    .aui-btn-default {
+      background: #FFFFFF;
+      color: var(--aui-text-900);
+      border: 1px solid #DCDCDC;
+    }
+
+    .aui-btn-default:hover {
+      background: #FAFAFA;
+      border-color: #B0B0B0;
+    }
+
+    .aui-btn-text {
+      background: transparent;
+      color: var(--aui-text-900);
+      border: none;
+    }
+
+    .aui-btn-text:hover {
+      background: #F5F5F5;
+    }
+
+    .aui-btn-icon {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .aui-collapse-content .aui-form-grid {
+      flex-direction: row;
+    }
+
+    @media (max-width: 768px) {
+      .aui-collapse-content .aui-form-grid {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container main-content">
-        <div class="header-card">
-            <div class="header-content">
-                <div class="header-info">
-                    <div class="header-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <path d="M16 10a4 4 0 0 1-8 0"/>
-                        </svg>
-                    </div>
-                    <div class="header-text">
-                        <h1>销售订单详情</h1>
-                        <p>00F0034567873QW</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <span class="badge badge-success" style="padding: 8px 16px; font-size: 14px;">已确认</span>
-                </div>
-            </div>
+  <div class="container">
+    <!-- 顶部卡片 -->
+    <div class="aui-card-detail-header">
+      <div class="aui-card-header-content">
+        <div class="aui-card-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-9H6V4h5v4z"/>
+          </svg>
         </div>
-
-        <div class="page-content">
-            <div class="accordion">
-                <div class="accordion-header active" onclick="toggleAccordion(this)">
-                    <div class="accordion-title">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="3" y1="9" x2="21" y2="9"/>
-                            <line x1="9" y1="21" x2="9" y2="9"/>
-                        </svg>
-                        基本信息
-                    </div>
-                    <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                </div>
-                <div class="accordion-content active">
-                    <div class="accordion-body">
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="form-group">
-                                <label class="form-label">运输方式<span class="required">*</span></label>
-                                <select class="form-select">
-                                    <option value="air">空运</option>
-                                    <option value="sea">海运</option>
-                                    <option value="land">陆运</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">贸易术语<span class="required">*</span></label>
-                                <select class="form-select">
-                                    <option value="FOB">FOB</option>
-                                    <option value="CIF">CIF</option>
-                                    <option value="EXW">EXW</option>
-                                    <option value="DDP">DDP</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">订单来源<span class="required">*</span></label>
-                                <input type="text" class="form-input" value="采购上游系统">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">来源对象类型</label>
-                                <input type="text" class="form-input" placeholder="-">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">来源单据号</label>
-                                <input type="text" class="form-input" value="ABCDEFG">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">关联订单号</label>
-                                <input type="text" class="form-input" value="2025080987483">
-                            </div>
-                            <div class="form-group col-span-2">
-                                <label class="form-label">备注</label>
-                                <textarea class="form-textarea" placeholder="该订单为XXXXXX客户XXXXXX"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <div class="accordion">
-                <div class="accordion-header active" onclick="toggleAccordion(this)">
-                    <div class="accordion-title">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                            <line x1="8" y1="6" x2="21" y2="6"/>
-                            <line x1="8" y1="12" x2="21" y2="12"/>
-                            <line x1="8" y1="18" x2="21" y2="18"/>
-                            <line x1="3" y1="6" x2="3.01" y2="6"/>
-                            <line x1="3" y1="12" x2="3.01" y2="12"/>
-                            <line x1="3" y1="18" x2="3.01" y2="18"/>
-                        </svg>
-                        详细行信息
-                    </div>
-                    <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                </div>
-                <div class="accordion-content active">
-                    <div class="accordion-body" style="padding: 0;">
-                        <div class="toolbar">
-                            <div class="toolbar-title">订单明细</div>
-                            <div class="toolbar-actions">
-                                <button class="btn btn-primary btn-sm">
-                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-                                        <line x1="12" y1="5" x2="12" y2="19"/>
-                                        <line x1="5" y1="12" x2="19" y2="12"/>
-                                    </svg>
-                                    新增
-                                </button>
-                            </div>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 40px;"><input type="checkbox" class="checkbox"></th>
-                                        <th style="width: 120px;">操作</th>
-                                        <th style="width: 80px;">行号</th>
-                                        <th style="width: 150px;">物料编码</th>
-                                        <th>物料描述</th>
-                                        <th style="width: 100px;">物料版本</th>
-                                        <th style="width: 100px;">订购数量</th>
-                                        <th style="width: 80px;">单位</th>
-                                        <th style="width: 120px;">销售单价</th>
-                                        <th style="width: 100px;">状态</th>
-                                        <th style="width: 140px;">客户要求发货日期</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><input type="checkbox" class="checkbox"></td>
-                                        <td>
-                                            <div class="flex gap-2">
-                                                <button class="action-btn btn-sm" title="拷贝">
-                                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="action-btn btn-sm" title="查看详情">
-                                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                        <circle cx="12" cy="12" r="3"/>
-                                                    </svg>
-                                                </button>
-                                                <div class="action-dropdown">
-                                                    <button class="action-btn btn-sm" title="更多">
-                                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                            <circle cx="12" cy="12" r="1"/>
-                                                            <circle cx="12" cy="5" r="1"/>
-                                                            <circle cx="12" cy="19" r="1"/>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><input type="text" value="1"></td>
-                                        <td><input type="text" placeholder="选择物料"></td>
-                                        <td><input type="text" value="机顶盒"></td>
-                                        <td><input type="text" value="V1"></td>
-                                        <td><input type="number" value="50"></td>
-                                        <td><input type="text" value="台"></td>
-                                        <td><input type="number" value="2999"></td>
-                                        <td><span class="badge badge-success">已发货</span></td>
-                                        <td><input type="date" value="2025-08-15"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="checkbox" class="checkbox"></td>
-                                        <td>
-                                            <div class="flex gap-2">
-                                                <button class="action-btn btn-sm" title="拷贝">
-                                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="action-btn btn-sm" title="查看详情">
-                                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                        <circle cx="12" cy="12" r="3"/>
-                                                    </svg>
-                                                </button>
-                                                <div class="action-dropdown">
-                                                    <button class="action-btn btn-sm" title="更多">
-                                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                            <circle cx="12" cy="12" r="1"/>
-                                                            <circle cx="12" cy="5" r="1"/>
-                                                            <circle cx="12" cy="19" r="1"/>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><input type="text" value="2"></td>
-                                        <td><input type="text" placeholder="选择物料"></td>
-                                        <td><input type="text" value="遥控器"></td>
-                                        <td><input type="text" value="V2"></td>
-                                        <td><input type="number" value="100"></td>
-                                        <td><input type="text" value="个"></td>
-                                        <td><input type="number" value="99"></td>
-                                        <td><span class="badge badge-warning">待发货</span></td>
-                                        <td><input type="date" value="2025-08-20"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="checkbox" class="checkbox"></td>
-                                        <td>
-                                            <div class="flex gap-2">
-                                                <button class="action-btn btn-sm" title="拷贝">
-                                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="action-btn btn-sm" title="查看详情">
-                                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                        <circle cx="12" cy="12" r="3"/>
-                                                    </svg>
-                                                </button>
-                                                <div class="action-dropdown">
-                                                    <button class="action-btn btn-sm" title="更多">
-                                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                            <circle cx="12" cy="12" r="1"/>
-                                                            <circle cx="12" cy="5" r="1"/>
-                                                            <circle cx="12" cy="19" r="1"/>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><input type="text" value="3"></td>
-                                        <td><input type="text" placeholder="选择物料"></td>
-                                        <td><input type="text" value="电源适配器"></td>
-                                        <td><input type="text" value="V1"></td>
-                                        <td><input type="number" value="50"></td>
-                                        <td><input type="text" value="个"></td>
-                                        <td><input type="number" value="59"></td>
-                                        <td><span class="badge badge-info">生产中</span></td>
-                                        <td><input type="date" value="2025-08-25"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="flex items-center justify-between mb-4" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
-                    <div class="flex items-center gap-2">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        <h3 class="text-lg font-semibold" style="color: var(--text-primary);">时间记录</h3>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div class="table-container" style="overflow-x: auto;">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>操作类型</th>
-                                    <th>操作人</th>
-                                    <th>操作时间</th>
-                                    <th>备注</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>订单创建</td>
-                                    <td>张三</td>
-                                    <td>2025-07-01 09:30</td>
-                                    <td>创建销售订单</td>
-                                </tr>
-                                <tr>
-                                    <td>订单确认</td>
-                                    <td>李四</td>
-                                    <td>2025-07-01 14:22</td>
-                                    <td>确认订单信息无误</td>
-                                </tr>
-                                <tr>
-                                    <td>价格调整</td>
-                                    <td>王五</td>
-                                    <td>2025-07-02 10:15</td>
-                                    <td>调整部分商品价格</td>
-                                </tr>
-                                <tr>
-                                    <td>发货安排</td>
-                                    <td>赵六</td>
-                                    <td>2025-07-03 16:45</td>
-                                    <td>安排货物发出</td>
-                                </tr>
-                                <tr>
-                                    <td>状态更新</td>
-                                    <td>孙七</td>
-                                    <td>2025-07-04 11:30</td>
-                                    <td>更新为已发货状态</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div class="aui-card-text">
+          <h1 class="aui-card-title">销售订单详情</h1>
+          <div style="display: flex; align-items: center; gap: var(--space-s);">
+            <span class="aui-card-subtitle">00F0034567873QW</span>
+            <span class="aui-tag-success">已确认</span>
+          </div>
         </div>
+      </div>
     </div>
 
-    <footer class="page-footer">
-        <div class="footer-content">
-            <button class="btn btn-primary">提交</button>
-            <button class="btn btn-secondary">编辑</button>
-            <button class="btn btn-secondary">暂挂</button>
-            <button class="btn btn-secondary">取消</button>
+    <!-- 折叠面板容器 -->
+    <div class="aui-collapse-container">
+      <!-- 基本信息 -->
+      <div class="aui-collapse-item">
+        <div class="aui-collapse-header active" onclick="toggleCollapse('basic')">
+          <span class="aui-collapse-title">基本信息</span>
+          <svg class="aui-collapse-icon" viewBox="0 0 24 24">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
         </div>
-    </footer>
+        <div class="aui-collapse-content active" id="basic">
+          <div class="aui-form-grid">
+            <div class="aui-form-item">
+              <label class="aui-form-label required">运输方式</label>
+              <select class="aui-select">
+                <option value="">请选择运输方式</option>
+                <option value="air" selected>空运</option>
+                <option value="sea">海运</option>
+                <option value="land">陆运</option>
+                <option value="express">快递</option>
+              </select>
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label required">贸易术语</label>
+              <select class="aui-select">
+                <option value="">请选择贸易术语</option>
+                <option value="fob" selected>FOB</option>
+                <option value="cif">CIF</option>
+                <option value="exw">EXW</option>
+                <option value="ddp">DDP</option>
+              </select>
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">订单来源</label>
+              <input type="text" class="aui-input" value="采购上游系统" placeholder="请输入订单来源">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">来源对象类型</label>
+              <input type="text" class="aui-input" placeholder="请输入来源对象类型">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">来源单据号</label>
+              <input type="text" class="aui-input" value="ABCDEFG" placeholder="请输入来源单据号">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">关联订单号</label>
+              <input type="text" class="aui-input" value="2025080987483" placeholder="请输入关联订单号">
+            </div>
+            <div class="aui-form-item" style="flex: 1 1 100%;">
+              <label class="aui-form-label">备注</label>
+              <textarea class="aui-textarea" placeholder="请输入备注">该订单为XXXXXX客户XXXXXX</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <script>
-        function toggleAccordion(header) {
-            const content = header.nextElementSibling;
-            const isActive = header.classList.contains('active');
-            
-            header.classList.toggle('active');
-            content.classList.toggle('active');
-        }
-    </script>
+      <!-- 时间记录 -->
+      <div class="aui-collapse-item">
+        <div class="aui-collapse-header active" onclick="toggleCollapse('timeline')">
+          <span class="aui-collapse-title">时间记录</span>
+          <svg class="aui-collapse-icon" viewBox="0 0 24 24">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
+        </div>
+        <div class="aui-collapse-content active" id="timeline">
+          <div class="aui-form-grid">
+            <div class="aui-form-item">
+              <label class="aui-form-label">确认时间</label>
+              <input type="date" class="aui-input" value="2025-07-03">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">关闭时间</label>
+              <input type="date" class="aui-input" value="2025-07-03">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">下单时间</label>
+              <input type="date" class="aui-input" value="2025-07-03">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">创建人</label>
+              <input type="text" class="aui-input" value="张三" readonly>
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">创建时间</label>
+              <input type="date" class="aui-input" value="2025-07-03">
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">最后修改人</label>
+              <input type="text" class="aui-input" value="莉莉" readonly>
+            </div>
+            <div class="aui-form-item">
+              <label class="aui-form-label">最后修改时间</label>
+              <input type="date" class="aui-input" value="2025-07-03">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 详细行信息 -->
+      <div class="aui-collapse-item">
+        <div class="aui-collapse-header active" onclick="toggleCollapse('details')">
+          <span class="aui-collapse-title">详细行信息</span>
+          <svg class="aui-collapse-icon" viewBox="0 0 24 24">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
+        </div>
+        <div class="aui-collapse-content active" id="details">
+          <div class="aui-table-toolbar">
+            <button class="aui-btn-primary" onclick="addRow()">
+              <svg class="aui-btn-icon" viewBox="0 0 24 24">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+              新增
+            </button>
+          </div>
+          <div class="aui-table-container">
+            <table class="aui-table">
+              <thead>
+                <tr>
+                  <th width="40" style="text-align: center;">选择</th>
+                  <th width="120" style="text-align: center;">操作</th>
+                  <th width="80">行号</th>
+                  <th width="120">物料编码</th>
+                  <th width="150">物料描述</th>
+                  <th width="100">物料版本</th>
+                  <th width="100">订购数量</th>
+                  <th width="80">单位</th>
+                  <th width="100">销售单价</th>
+                  <th width="100">状态</th>
+                  <th width="160">客户要求发货日期</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr>
+                  <td style="text-align: center;">
+                    <input type="checkbox" class="aui-table-checkbox" checked>
+                  </td>
+                  <td style="text-align: center;">
+                    <div class="aui-table-actions">
+                      <button class="aui-table-action-btn" onclick="copyRow(this)">拷贝</button>
+                      <button class="aui-table-action-btn" onclick="viewDetail(this)">查看详情</button>
+                      <button class="aui-table-action-btn" onclick="showMoreMenu(this)">更多</button>
+                    </div>
+                  </td>
+                  <td><input type="text" class="aui-table-text-input" value="1" readonly></td>
+                  <td>
+                    <select class="aui-table-select">
+                      <option value="">请选择</option>
+                      <option value="MAT001" selected>MAT001</option>
+                      <option value="MAT002">MAT002</option>
+                    </select>
+                  </td>
+                  <td><input type="text" class="aui-table-text-input" value="机顶盒"></td>
+                  <td><input type="text" class="aui-table-text-input" value="V1"></td>
+                  <td><input type="number" class="aui-table-text-input" value="50"></td>
+                  <td><input type="text" class="aui-table-text-input" value="台"></td>
+                  <td><input type="text" class="aui-table-text-input" value=""></td>
+                  <td><span class="aui-tag-success">已发货</span></td>
+                  <td><input type="date" class="aui-table-date-picker" value="2025-07-10"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 页面底部按钮组 -->
+    <div class="aui-page-footer">
+      <button class="aui-btn aui-btn-primary-footer" onclick="handleSubmit()">提交</button>
+      <button class="aui-btn aui-btn-default" onclick="handleEdit()">编辑</button>
+      <button class="aui-btn aui-btn-default" onclick="handleSaveDraft()">暂挂</button>
+      <button class="aui-btn aui-btn-text" onclick="handleCancel()">取消</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleCollapse(name) {
+      const content = document.getElementById(name);
+      const header = content.previousElementSibling;
+      const icon = header.querySelector('.aui-collapse-icon');
+      
+      content.classList.toggle('active');
+      header.classList.toggle('active');
+      
+      if (content.classList.contains('active')) {
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function addRow() {
+      const tableBody = document.getElementById('tableBody');
+      const rowCount = tableBody.rows.length + 1;
+      
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td style="text-align: center;">
+          <input type="checkbox" class="aui-table-checkbox" checked>
+        </td>
+        <td style="text-align: center;">
+          <div class="aui-table-actions">
+            <button class="aui-table-action-btn" onclick="copyRow(this)">拷贝</button>
+            <button class="aui-table-action-btn" onclick="viewDetail(this)">查看详情</button>
+            <button class="aui-table-action-btn" onclick="showMoreMenu(this)">更多</button>
+          </div>
+        </td>
+        <td><input type="text" class="aui-table-text-input" value="${rowCount}" readonly></td>
+        <td>
+          <select class="aui-table-select">
+            <option value="">请选择</option>
+            <option value="MAT001">MAT001</option>
+            <option value="MAT002">MAT002</option>
+          </select>
+        </td>
+        <td><input type="text" class="aui-table-text-input" placeholder="请输入物料描述"></td>
+        <td><input type="text" class="aui-table-text-input" placeholder="请输入物料版本"></td>
+        <td><input type="number" class="aui-table-text-input" placeholder="0"></td>
+        <td><input type="text" class="aui-table-text-input" placeholder="请输入单位"></td>
+        <td><input type="text" class="aui-table-text-input" placeholder="请输入销售单价"></td>
+        <td><span class="aui-tag-success">待发货</span></td>
+        <td><input type="date" class="aui-table-date-picker"></td>
+      `;
+      
+      tableBody.appendChild(newRow);
+    }
+
+    function copyRow(btn) {
+      console.log('拷贝行:', btn);
+      alert('拷贝功能');
+    }
+
+    function viewDetail(btn) {
+      console.log('查看详情:', btn);
+      alert('查看详情功能');
+    }
+
+    function showMoreMenu(btn) {
+      console.log('更多菜单:', btn);
+      alert('更多菜单功能');
+    }
+
+    function handleSubmit() {
+      console.log('提交');
+      alert('提交功能');
+    }
+
+    function handleEdit() {
+      console.log('编辑');
+      alert('编辑功能');
+    }
+
+    function handleSaveDraft() {
+      console.log('暂挂');
+      alert('暂挂功能');
+    }
+
+    function handleCancel() {
+      console.log('取消');
+      alert('取消功能');
+    }
+  </script>
 </body>
 </html>
