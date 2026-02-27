@@ -124,7 +124,7 @@ def search(query_str):
                 reader = csv.DictReader(file)
                 for row in reader:
                     # 仅提取 S_ 开头的字段参与 BM25 索引建模
-                    search_content = " ".join([v for k, v in row.items() if k.startswith('S_')])
+                    search_content = " ".join([v for k, v in row.items() if k and k.startswith('S_')])
                     docs.append(re.findall(r'\\w+', search_content.lower()))
                     meta.append({"file": f, "data": row})
 
@@ -136,7 +136,7 @@ def search(query_str):
     for s, i in scores[:8]: # 返回前8条相关规范
         if s > 0:
             # 仅输出 O_ 开头的规范载荷给 AI
-            payload = {k: v for k, v in meta[i]['data'].items() if k.startswith('O_')}
+            payload = {k: v for k, v in meta[i]['data'].items() if k and k.startswith('O_')}
             res.append(f"[Match Score: {s:.2f}] [Source: {meta[i]['file']}]\\nPayload: {payload}")
 
     return "\\n".join(res) if res else "No enterprise AUI specs matched."
